@@ -19,9 +19,9 @@
   ],
 
   "icons": {
-    "16": "icons/visual.png",
-    "48": "icons/visual.png",
-    "128": "icons/visual.png"
+    "16": "icons/extension-icon.png",
+    "48": "icons/extension-icon.png",
+    "128": "icons/extension-icon.png"
   },
 
   "action": {
