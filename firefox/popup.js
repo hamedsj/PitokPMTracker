@@ -1,5 +1,5 @@
 function loaded() {
-  const runtime = typeof browser !== 'undefined' ? browser : chrome;
+  const runtime = typeof browser !== "undefined" ? browser : chrome;
   runtime.runtime.sendMessage("get-stuff", (msg) => {
     console.log("message received:", msg);
 
@@ -90,10 +90,15 @@ function listListeners(listeners) {
       try {
         if (!isPrettified) {
           if (!prettifiedCode) {
-            prettifiedCode = prettier.format(originalCode, {
-              parser: "babel",
-              plugins: prettierPlugins,
-            });
+            try {
+              prettifiedCode = prettier.format(originalCode, {
+                parser: "babel",
+                plugins: prettierPlugins,
+              });
+            } catch (prettierError) {
+              console.error("Prettier formatting failed:", prettierError);
+              prettifiedCode = originalCode;
+            }
           }
           const result = hljs.highlight(prettifiedCode, {
             language: "javascript",
@@ -111,13 +116,20 @@ function listListeners(listeners) {
         }
       } catch (e) {
         console.error("Prettify toggle failed:", e);
-        alert("Could not format the code.");
       }
     });
 
     const container = document.createElement("div");
     container.style.position = "relative";
-    container.appendChild(btn);
+
+    try {
+      prettifiedCode = prettier.format(originalCode, {
+        parser: "babel",
+        plugins: prettierPlugins,
+      });
+      container.appendChild(btn);
+    } catch {}
+
     container.appendChild(pel);
 
     el.appendChild(container);
