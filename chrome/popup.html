@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles/atom-one-dark.min.css" />
+
+    <script src="highlight.min.js"></script>
+    <script src="prettier.min.js"></script>
+    <script src="parser-babel.js"></script>
+    <script src="popup.js" defer></script>
+
+    <style>
+      * {
+        color: white;
+      }
+
+      h3 {
+        margin: 0 0 5px 0;
+        font-weight: normal;
+        width: 300px;
+        overflow: hidden;
+        white-space: normal;
+        word-wrap: break-word;
+        max-height: 96px;
+      }
+      h3 code {
+        font-size: 15px;
+      }
+      #content {
+        min-height: 400px;
+        max-height: 800px;
+        padding: 0 10px 10px;
+      }
+      ol {
+        padding: 0 0 0 10px;
+        max-width: 500px;
+        width: 350px;
+        margin: 0;
+      }
+      li i {
+        font-size: 10px;
+      }
+      li pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        padding: 2px 5px;
+        margin: 0;
+      }
+      body {
+        background-color: #1a1a1e;
+      }
+      li {
+        margin: 0 0 5px;
+        padding: 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      li span {
+        font-size: 10px;
+        line-height: 12px;
+        margin: 0 0 2px;
+        display: block;
+      }
+
+      pre code.hljs {
+        white-space: pre-wrap;
+        word-break: break-word;
+        display: block;
+        padding: 5px;
+        border: 2px solid #373845;
+        border-radius: 4px;
+      }
+      
+      code span {
+        white-space: initial !important;
+        display: inline !important;
+      }
+
+      pre {
+        position: relative;
+        padding-top: 25px;
+      }
+
+      pre button {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        z-index: 10;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="content">
+      <h3 id="h"></h3>
+      <ol id="x"></ol>
+    </div>
+  </body>
+</html>
