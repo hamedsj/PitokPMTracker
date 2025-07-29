@@ -1,6 +1,11 @@
 # <img src="./firefox/icons/visual.png" width="26" height="26" alt="Icon" /> Pitok PostMessage Tracker
 
-This extension is a refined and extended version of [postMessage-tracker](https://github.com/fransr/postMessage-tracker) browser extension that have been written by [Frans Rosén](https://twitter.com/fransrosen)
+This extension is a refined and extended version of [postMessage-tracker](https://github.com/fransr/postMessage-tracker) browser extension originally written by [Frans Rosén](https://twitter.com/fransrosen). It improves compatibility, adds Manifest V3 support, Firefox support, and syntax highlighting for better debugging.
+
+<p align="center">
+<img src="./readme-images/screenshot1.png" width="320" alt="Screenshot" />
+</p>
+
 
 ## 🧩 Extended Features
 
