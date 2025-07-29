@@ -110,13 +110,20 @@ function listListeners(listeners) {
         }
       } catch (e) {
         console.error("Prettify toggle failed:", e);
-        alert("Could not format the code.");
       }
     });
 
     const container = document.createElement("div");
     container.style.position = "relative";
-    container.appendChild(btn);
+
+    try {
+      prettifiedCode = prettier.format(originalCode, {
+        parser: "babel",
+        plugins: prettierPlugins,
+      });
+      container.appendChild(btn);
+    } catch {}
+
     container.appendChild(pel);
 
     el.appendChild(container);
