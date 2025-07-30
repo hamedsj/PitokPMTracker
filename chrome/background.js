@@ -3,31 +3,52 @@ let tab_push = {};
 let tab_lasturl = {};
 let selectedId = -1;
 
+function isFromExtension(listener) {
+  const stack = listener.stack || "";
+  const fullstack = listener.fullstack || [];
+  const allStacks = [stack, ...fullstack][0];
+  return (
+    /moz-extension:\/\//.test(allStacks) ||
+    /chrome-extension:\/\//.test(allStacks)
+  );
+}
+
 function refreshCount() {
-  const txt = tab_listeners[selectedId] ? tab_listeners[selectedId].length : 0;
-  chrome.tabs.get(selectedId, () => {
-    if (!chrome.runtime.lastError) {
-      chrome.action.setBadgeText({ text: txt.toString(), tabId: selectedId });
-      chrome.action.setBadgeBackgroundColor({
-        tabId: selectedId,
-        color: txt > 0 ? [255, 0, 0, 255] : [0, 0, 255, 0]
-      });
-    }
+  chrome.storage.sync.get({ filter_extensions: true }, (settings) => {
+    const listeners = tab_listeners[selectedId] || [];
+    const filtered = settings.filter_extensions
+      ? listeners.filter((l) => !isFromExtension(l))
+      : listeners;
+
+    const txt = filtered.length;
+
+    chrome.tabs.get(selectedId, () => {
+      if (!chrome.runtime.lastError) {
+        chrome.action.setBadgeText({
+          text: txt > 0 ? txt.toString() : "",
+          tabId: selectedId,
+        });
+        chrome.action.setBadgeBackgroundColor({
+          tabId: selectedId,
+          color: txt > 0 ? [255, 0, 0, 255] : [0, 0, 255, 0],
+        });
+      }
+    });
   });
 }
 
 function logListener(data) {
-  chrome.storage.sync.get({ log_url: '' }, (items) => {
+  chrome.storage.sync.get({ log_url: "" }, (items) => {
     const log_url = items.log_url;
     if (!log_url) return;
     try {
       fetch(log_url, {
-        method: 'POST',
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
     } catch (e) {
-      console.warn('Log fetch failed:', e);
+      console.warn("Log fetch failed:", e);
     }
   });
 }
@@ -36,7 +57,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   const tabId = sender.tab?.id;
   if (!tabId) return;
 
-  if (msg.listener && msg.listener !== 'function () { [native code] }') {
+  if (msg === "get-stuff") {
+    sendResponse({ listeners: tab_listeners });
+    return;
+  }
+
+  if (msg.listener && msg.listener !== "function () { [native code] }") {
     msg.parent_url = sender.tab.url;
     tab_listeners[tabId] = tab_listeners[tabId] || [];
     tab_listeners[tabId].push(msg);
@@ -50,7 +76,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 chrome.tabs.onUpdated.addListener((tabId, props) => {
-  if (props.status === 'complete' && tabId === selectedId) {
+  if (props.status === "complete" && tabId === selectedId) {
     refreshCount();
   } else if (props.status) {
     if (tab_push[tabId]) {
@@ -60,7 +86,7 @@ chrome.tabs.onUpdated.addListener((tabId, props) => {
     }
   }
 
-  if (props.status === 'loading') {
+  if (props.status === "loading") {
     tab_lasturl[tabId] = true;
   }
 });
@@ -79,9 +105,9 @@ chrome.runtime.onStartup.addListener(() => {
   });
 });
 
-// Replace onConnect with runtime message-based query
+// ✅ Add missing handler from Firefox version
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg === 'get-stuff') {
-    sendResponse({ listeners: tab_listeners });
+  if (msg === "refresh-badge") {
+    refreshCount();
   }
 });

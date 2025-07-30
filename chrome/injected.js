@@ -118,13 +118,13 @@
   };
 
   var onmsgport = function(e) {
-    var msg = '[Port →] ' + h(e.source) + ' ' + (typeof e.data === 'string' ? e.data : JSON.stringify(e.data));
-    console.log(msg);
+    var msg = '%c[Port]%c → %c' + h(e.source) + '%c ' + (typeof e.data === 'string' ? e.data : JSON.stringify(e.data));
+    console.log(msg, 'color: blue;', '', 'color: purple;', '');
   };
 
   var onmsg = function(e) {
-    var msg = '[Window] ' + h(e.source) + ' → ' + h() + ' ' + (typeof e.data === 'string' ? e.data : JSON.stringify(e.data));
-    console.log(msg);
+    var msg = '%c[Window]%c → %c' + h(e.source) + '%c ' + (typeof e.data === 'string' ? e.data : JSON.stringify(e.data));
+    console.log(msg, 'color: red;', '', 'color: green;', '');
   };
 
   window.addEventListener('message', onmsg);
