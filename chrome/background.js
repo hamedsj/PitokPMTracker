@@ -57,11 +57,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   const tabId = sender.tab?.id;
   if (!tabId) return;
 
-  if (msg === "get-stuff") {
-    sendResponse({ listeners: tab_listeners });
-    return;
-  }
-
   if (msg.listener && msg.listener !== "function () { [native code] }") {
     msg.parent_url = sender.tab.url;
     tab_listeners[tabId] = tab_listeners[tabId] || [];
@@ -105,7 +100,12 @@ chrome.runtime.onStartup.addListener(() => {
   });
 });
 
-// ✅ Add missing handler from Firefox version
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg === 'get-stuff') {
+    sendResponse({ listeners: tab_listeners });
+  }
+});
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg === "refresh-badge") {
     refreshCount();
