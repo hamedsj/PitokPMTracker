@@ -31,6 +31,8 @@ function loaded() {
   });
 
   function refresh() {
+    runtime.runtime.sendMessage("refresh-badge");
+  
     runtime.runtime.sendMessage("get-stuff", (msg) => {
       runtime.tabs.query(
         { active: true, currentWindow: true },
