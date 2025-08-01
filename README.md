@@ -9,10 +9,11 @@ This extension is a refined and extended version of [postMessage-tracker](https:
 
 ## 🧩 Extended Features
 
-* Manifest V3 support
-* Firefox compatibility
+* Support for Manifest V3
+* Works with Firefox
 * Improved syntax highlighting
-* code formatting for better readability
+* Better code formatting for easier reading
+* Filters postMessages from other extensions
 
 ## 📖 Usage 
 ### <img src="./readme-images/chrome.png" width="16" height="16" alt="Firefox Icon" /> Chrome
