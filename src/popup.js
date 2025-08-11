@@ -32,34 +32,27 @@ function loaded() {
 
   function refresh() {
     runtime.runtime.sendMessage("refresh-badge");
-  
+
     runtime.runtime.sendMessage("get-stuff", (msg) => {
-      runtime.tabs.query(
-        { active: true, currentWindow: true },
-        function (tabs) {
-          const selectedTab = tabs[0];
-          const selectedId = selectedTab.id;
-          const rawListeners =
-            msg && msg.listeners && msg.listeners[selectedId];
-          const filtered = filterListeners(
-            rawListeners || [],
-            !checkbox.checked
-          );
+      runtime.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        const selectedTab = tabs[0];
+        const selectedId = selectedTab.id;
+        const rawListeners = msg && msg.listeners && msg.listeners[selectedId];
+        const filtered = filterListeners(rawListeners || [], !checkbox.checked);
 
-          const h = document.getElementById("h");
-          const fullUrl = selectedTab.url || "";
-          h.innerText = fullUrl;
-          h.title = fullUrl;
+        const h = document.getElementById("h");
+        const fullUrl = selectedTab.url || "";
+        h.innerText = fullUrl;
+        h.title = fullUrl;
 
-          requestAnimationFrame(() => {
-            if (h.scrollWidth > h.clientWidth) {
-              h.innerText = shortenMiddle(fullUrl);
-            }
-          });
+        requestAnimationFrame(() => {
+          if (h.scrollWidth > h.clientWidth) {
+            h.innerText = shortenMiddle(fullUrl);
+          }
+        });
 
-          listListeners(filtered);
-        }
-      );
+        listListeners(filtered);
+      });
     });
   }
 }
@@ -70,7 +63,9 @@ function shortenMiddle(text, maxLength = 60) {
   return text.slice(0, half) + "..." + text.slice(-half);
 }
 
-document.addEventListener("DOMContentLoaded", loaded);
+if (typeof document !== "undefined") {
+  document.addEventListener("DOMContentLoaded", loaded);
+}
 
 function listListeners(listeners) {
   var x = document.getElementById("x");
@@ -105,16 +100,11 @@ function listListeners(listeners) {
     code.className = "hljs language-javascript";
 
     try {
-      const result = hljs.highlight(listener.listener, {
-        language: "javascript",
-      });
+      const result = hljs.highlight(listener.listener, { language: "javascript" });
       code.innerHTML = result.value;
     } catch (err) {
       code.textContent =
-        "Highlight.js failed to parse code: " +
-        err +
-        "\n\n" +
-        listener.listener;
+        "Highlight.js failed to parse code: " + err + "\n\n" + listener.listener;
     }
 
     pel.appendChild(code);
@@ -152,16 +142,12 @@ function listListeners(listeners) {
               prettifiedCode = originalCode;
             }
           }
-          const result = hljs.highlight(prettifiedCode, {
-            language: "javascript",
-          });
+          const result = hljs.highlight(prettifiedCode, { language: "javascript" });
           code.innerHTML = result.value;
           btn.textContent = "Original";
           isPrettified = true;
         } else {
-          const result = hljs.highlight(originalCode, {
-            language: "javascript",
-          });
+          const result = hljs.highlight(originalCode, { language: "javascript" });
           code.innerHTML = result.value;
           btn.textContent = "Prettify";
           isPrettified = false;
@@ -208,3 +194,9 @@ function listListeners(listeners) {
     existingMsg.remove();
   }
 }
+
+// Expose helpers for Node-based tests without affecting browser runtime
+if (typeof module !== "undefined") {
+  module.exports = { isFromExtension, filterListeners, shortenMiddle };
+}
+

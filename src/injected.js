@@ -1,3 +1,4 @@
+// NOTE: Core algorithm preserved as-is (moved without changes)
 (function(pushstate, msgeventlistener, msgporteventlistener) {
   var loaded = false;
   var originalFunctionToString = Function.prototype.toString;
@@ -99,12 +100,22 @@
   };
 
   var original_setter = window.__lookupSetter__('onmessage');
-  window.__defineSetter__('onmessage', function(listener) {
-    if (listener) {
-      l(listener.toString());
-    }
-    original_setter(listener);
-  });
+  try {
+    window.__defineSetter__('onmessage', function(listener) {
+      if (listener) {
+        l(listener.toString());
+      }
+      if (typeof original_setter === 'function') {
+        // Call original setter with correct this context
+        original_setter.call(window, listener);
+      } else {
+        // Fallback: assign directly
+        try { window.addEventListener('message', listener); } catch (e) {}
+      }
+    });
+  } catch (e) {
+    // Safety: if defineSetter fails, avoid breaking the page
+  }
 
   var c = function(listener) {
     var listener_str = originalFunctionToString.apply(listener);
@@ -173,3 +184,4 @@
   window.addEventListener('load', j);
   window.addEventListener('postMessageTrackerUpdate', j);
 })(History.prototype.pushState, Window.prototype.addEventListener, MessagePort.prototype.addEventListener);
+

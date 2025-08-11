@@ -5,8 +5,7 @@
   "version": "1.6.0",
 
   "background": {
-    "scripts": ["background.js"],
-    "persistent": false
+    "scripts": ["background.js"]
   },
 
   "content_scripts": [

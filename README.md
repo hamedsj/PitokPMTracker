@@ -15,6 +15,21 @@ This extension is a refined and extended version of [postMessage-tracker](https:
 * Better code formatting for easier reading
 * Filters postMessages from other extensions
 
+## 🛠️ NPM Development Workflow
+
+This repo now ships an npm-based layout to make development and packaging easier, without changing the core algorithm that finds postMessage listeners.
+
+- Install Node 18+.
+- Commands:
+  - `npm test` — runs Node tests for popup helpers.
+  - `npm run build` — writes packaged extension files to `dist/chrome` and `dist/firefox`.
+
+### Load Unpacked from dist
+
+After running `npm run build`:
+- Chrome: load `dist/chrome` as the unpacked extension.
+- Firefox: load `dist/firefox` (or zip it to an XPI) as the extension directory.
+
 ## 📖 Usage 
 ### <img src="./readme-images/chrome.png" width="16" height="16" alt="Firefox Icon" /> Chrome
 
@@ -26,7 +41,7 @@ git clone https://github.com/hamedsj/PitokPMTracker.git
 Then you can simply load the extension by going through these steps:
 1. Going to [Manage Extensions](chrome://extensions/) section of your chrome
 2. Click on `Load Unpacked` button
-3. Select the chrome folder from the cloned repository
+3. Select the `dist/chrome` folder.
 
 ✅ Congratulations you successfully loaded the extension
 
@@ -34,7 +49,7 @@ Then you can simply load the extension by going through these steps:
 
 You can simply download the latest version of firefox addon from [Release Page](https://github.com/hamedsj/PitokPMTracker/releases) of the repository.
 
-Then only by dragging the `.xpi` format file to the firefox page you can add the extension to your browser.
+You can also build locally: run `npm run build` and load the `dist/firefox` directory as a temporary extension. To package, zip `dist/firefox` into an `.xpi` and install it.
 
 ✅ Congratulations you successfully loaded the extension
 
@@ -43,4 +58,3 @@ Then only by dragging the `.xpi` format file to the firefox page you can add the
 * [@HamedSj](https://github.com/hamedsj)
 * [@Hossein_kd9](https://x.com/hossein_kd9)
 * [@0xHoneyBeeSea](https://github.com/0xHoneyBeeSea)
-

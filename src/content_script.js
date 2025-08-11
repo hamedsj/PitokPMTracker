@@ -1,9 +1,10 @@
 // Inject the postMessage tracker script into the page context
-if (document.contentType !== 'application/xml') {
+if (document.contentType !== 'application/xml' && !document.documentElement.dataset.pitokInjected) {
+  document.documentElement.dataset.pitokInjected = '1';
   const script = document.createElement('script');
-  script.src = chrome.runtime.getURL('injected.js');
+  script.src = (typeof browser !== 'undefined' ? browser : chrome).runtime.getURL('injected.js');
   script.type = 'text/javascript';
-  script.defer = true;
+  // No defer: execute as soon as possible to catch early listeners
   document.documentElement.appendChild(script);
 }
 
@@ -16,5 +17,7 @@ window.addEventListener('beforeunload', () => {
 });
 
 document.addEventListener('postMessageTracker', (event) => {
-  chrome.runtime.sendMessage(event.detail);
+  const runtime = typeof browser !== 'undefined' ? browser : chrome;
+  runtime.runtime.sendMessage(event.detail);
 });
+

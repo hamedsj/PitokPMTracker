@@ -1,9 +1,11 @@
+// Cross-browser runtime helper
+const runtime = typeof browser !== 'undefined' ? browser : chrome;
+
 let tab_listeners = {};
 let tab_push = {};
 let tab_lasturl = {};
 let selectedId = -1;
 
-// Detect listeners injected by extensions
 function isFromExtension(listener) {
   const stack = listener.stack || "";
   const fullstack = listener.fullstack || [];
@@ -15,7 +17,7 @@ function isFromExtension(listener) {
 }
 
 function refreshCount() {
-  chrome.storage.sync.get({ filter_extensions: true }, (settings) => {
+  runtime.storage.sync.get({ filter_extensions: true }, (settings) => {
     const listeners = tab_listeners[selectedId] || [];
     const filtered = settings.filter_extensions
       ? listeners.filter((l) => !isFromExtension(l))
@@ -23,13 +25,13 @@ function refreshCount() {
 
     const txt = filtered.length;
 
-    chrome.tabs.get(selectedId, () => {
-      if (!chrome.runtime.lastError) {
-        chrome.action.setBadgeText({
+    runtime.tabs.get(selectedId, () => {
+      if (!runtime.runtime.lastError) {
+        runtime.action.setBadgeText({
           text: txt > 0 ? txt.toString() : "",
           tabId: selectedId,
         });
-        chrome.action.setBadgeBackgroundColor({
+        runtime.action.setBadgeBackgroundColor({
           tabId: selectedId,
           color: txt > 0 ? [255, 0, 0, 255] : [0, 0, 255, 0],
         });
@@ -39,7 +41,7 @@ function refreshCount() {
 }
 
 function logListener(data) {
-  chrome.storage.sync.get({ log_url: "" }, (items) => {
+  runtime.storage.sync.get({ log_url: "" }, (items) => {
     const log_url = items.log_url;
     if (!log_url) return;
     try {
@@ -54,11 +56,11 @@ function logListener(data) {
   });
 }
 
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+runtime.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   const tabId = sender.tab?.id;
   if (!tabId) return;
 
-  if (msg.listener && msg.listener !== 'function () { [native code] }') {
+  if (msg.listener && msg.listener !== "function () { [native code] }") {
     msg.parent_url = sender.tab.url;
     tab_listeners[tabId] = tab_listeners[tabId] || [];
     tab_listeners[tabId].push(msg);
@@ -71,29 +73,24 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   else refreshCount();
 });
 
-chrome.tabs.onUpdated.addListener((tabId, props) => {
-  if (props.status === "complete" && tabId === selectedId) {
-    refreshCount();
-  } else if (props.status) {
-    if (tab_push[tabId]) {
-      delete tab_push[tabId]; // pushState change
-    } else if (!tab_lasturl[tabId]) {
-      tab_listeners[tabId] = []; // treat as new navigation
-    }
+runtime.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.status === 'loading') {
+    tab_listeners[tabId] = [];
+    delete tab_push[tabId];
+    delete tab_lasturl[tabId];
   }
-
-  if (props.status === "loading") {
-    tab_lasturl[tabId] = true;
+  if (changeInfo.status === 'complete' && tabId === selectedId) {
+    refreshCount();
   }
 });
 
-chrome.tabs.onActivated.addListener((activeInfo) => {
+runtime.tabs.onActivated.addListener((activeInfo) => {
   selectedId = activeInfo.tabId;
   refreshCount();
 });
 
-chrome.runtime.onStartup.addListener(() => {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+runtime.runtime.onStartup.addListener(() => {
+  runtime.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs.length > 0) {
       selectedId = tabs[0].id;
       refreshCount();
@@ -101,15 +98,15 @@ chrome.runtime.onStartup.addListener(() => {
   });
 });
 
-// Replace onConnect with runtime message-based query
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+runtime.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg === 'get-stuff') {
     sendResponse({ listeners: tab_listeners });
   }
 });
 
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg === 'refresh-badge') {
+runtime.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg === "refresh-badge") {
     refreshCount();
   }
 });
+

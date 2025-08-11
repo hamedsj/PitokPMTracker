@@ -1,0 +1,16 @@
+{
+  "name": "pitok-pm-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser extension to track postMessage listeners (npm-based layout)",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
+
