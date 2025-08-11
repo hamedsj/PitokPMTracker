@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "Pitok PM Tracker",
+  "description": "Monitors and indicates postMessage listeners in the current window.",
+  "version": "2.0.0",
+
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content_script.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+
+  "icons": {
+    "16": "icons/extension-icon.png",
+    "48": "icons/extension-icon.png",
+    "128": "icons/extension-icon.png"
+  },
+
+  "action": {
+    "default_popup": "popup.html"
+  },
+
+  "options_ui": {
+    "page": "options.html"
+  },
+
+  "permissions": ["tabs", "storage"],
+
+  "host_permissions": ["http://*/*", "https://*/*"],
+
+  "web_accessible_resources": [
+    {
+      "resources": ["injected.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  },
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "postmsg-tracker@yourdomain.com",
+      "strict_min_version": "109.0"
+    }
+  }
+}

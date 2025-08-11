@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <!-- CSS first -->
+    <link rel="stylesheet" href="styles/atom-one-dark.min.css" />
+
+    <script src="highlight.min.js"></script>
+    <script src="prettier.min.js"></script>
+    <script src="parser-babel.js"></script>
+    <script src="popup.js" defer></script>
+
+    <style>
+      :root {
+        --bg: #15151a;
+        --panel: #1b1c22;
+        --panel-2: #20212a;
+        --border: #2d2f3c;
+        --text: #e7e7ea;
+        --muted: #a7aabb;
+        --accent: #4b82ff;
+        --accent-2: #2f70ff;
+        --badge: #2a2b36;
+        --success: #2ea043;
+        --radius: 10px;
+        --gap: 10px;
+        --code-width: 400px; /* base width tied to code blocks (slightly wider) */
+      }
+
+      html, body { height: 100%; }
+      * { color: var(--text); box-sizing: border-box; }
+      body {
+        background-color: var(--bg);
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        font-size: 13px;
+        line-height: 1.35;
+        letter-spacing: 0.1px;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      h3 {
+        margin: 0 0 6px 0;
+        font-weight: 600;
+        width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        font-size: 13px;
+        opacity: 0.9;
+      }
+
+      #h {
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        font-size: 13px;
+        font-weight: normal;
+        margin: 0px;
+        text-align: left;
+      }
+
+      #content {
+        min-height: 420px;
+        max-height: 820px;
+        padding: 12px 12px 20px; /* extra bottom padding for last block spacing */
+        display: inline-block;     /* let content define popup width */
+        width: var(--code-width);  /* width follows code blocks */
+      }
+
+      .toolbar {
+        display: flex;
+        gap: var(--gap);
+        align-items: center;
+        margin: 6px 0 12px;
+        width: 100%;
+      }
+      .toolbar.column { flex-direction: column; align-items: stretch; gap: 6px; }
+      .toolbar .label { font-size: 11px; color: var(--muted); user-select: none; }
+      .toolbar .search {
+        flex: 1;
+        padding: 8px 10px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        outline: none;
+        transition: border-color .15s ease;
+      }
+      .toolbar .search:focus { border-color: var(--accent); }
+      .toolbar .badge {
+        background: var(--badge);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 3px 9px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .switch { display: flex; align-items: center; gap: 8px; font-size: 12px; margin: 8px 0 10px; width: 100%; }
+
+      .list { display: flex; flex-direction: column; gap: 12px; margin-top: 6px; padding-bottom: 8px; width: 100%; }
+
+      .card {
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+        border-radius: var(--radius);
+        padding: 10px 10px 8px;
+        box-shadow: 0 1px 0 rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.18);
+        width: 100%;
+      }
+
+      .row { display: flex; align-items: center; gap: 8px; }
+      .row.wrap { flex-wrap: wrap; }
+
+      .domain {
+        background: var(--badge);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 3px 8px;
+        font-size: 11px;
+        color: #d7d9e6;
+      }
+
+      .meta { font-size: 10px; color: #9aa0a6; }
+
+      .stack {
+        font-size: 11px;
+        color: #c3c4cf;
+        display: block;
+        margin-top: 2px;
+        white-space: nowrap;        /* keep a single line */
+        overflow: hidden;           /* avoid expanding popup width */
+        text-overflow: ellipsis;    /* fallback clipping */
+        max-width: 100%;
+      }
+
+      .actions { margin-left: auto; display: flex; gap: 6px; }
+      .btn {
+        font-size: 11px;
+        padding: 5px 8px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--panel);
+        color: #d7d7de;
+        cursor: pointer;
+      }
+      .btn:hover { background: #2a2b36; border-color: #3a3b49; }
+
+      pre { position: relative; margin-top: 8px; max-height: 340px; overflow: auto; }
+      pre code.hljs {
+        white-space: pre-wrap;   /* match original wrapping behavior */
+        word-break: break-word;  /* match original wrapping behavior */
+        display: block;
+        padding: 10px 12px;
+        border: 1px solid #3a3b49;
+        border-radius: 8px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 12.5px !important;
+        line-height: 1.45 !important;
+        max-width: var(--code-width);        /* match previous popup content width */
+        width: 100%;             /* allow shrink on smaller popups */
+        margin: 0 auto;          /* center the code block */
+      }
+      .hljs, .hljs * { font-size: 12.5px !important; }
+      code span { white-space: initial !important; display: inline !important; }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: relative;
+        width: 36px;
+        height: 20px;
+        background-color: #444;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      .slider::before {
+        content: "";
+        position: absolute;
+        height: 16px;
+        width: 16px;
+        left: 2px;
+        top: 2px;
+        background-color: white;
+        border-radius: 50%;
+        transition: transform 0.2s;
+      }
+
+      input:checked + .slider {
+        background-color: #007aff;
+      }
+
+      input:checked + .slider::before {
+        transform: translateX(16px);
+      }
+
+      .label-text { color: #d7d7de; }
+    </style>
+  </head>
+  <body>
+    <div id="content">
+      <h3 id="h" title=""></h3>
+
+      <div class="toolbar">
+        <input id="search" class="search" placeholder="Search domain, stack, or code" />
+        <span class="badge" id="count-badge">0</span>
+      </div>
+
+      <div class="toolbar column">
+        <label for="exclude" class="label">Exclude sources</label>
+        <input id="exclude" class="search" placeholder="jquery, googletagmanager" />
+      </div>
+
+      <label class="switch">
+        <input type="checkbox" id="filter-ext" />
+        <span class="slider"></span>
+        <span class="label-text">Show listeners from other extensions</span>
+      </label>
+
+      <div id="x" class="list"></div>
+    </div>
+  </body>
+</html>
