@@ -16,23 +16,50 @@ function isFromExtension(listener) {
   );
 }
 
-function refreshCount() {
-  runtime.storage.sync.get({ filter_extensions: true }, (settings) => {
-    const listeners = tab_listeners[selectedId] || [];
+function parseExclusions(val) {
+  return (val || '')
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function excludedByTokens(item, tokens) {
+  if (!tokens || tokens.length === 0) return false;
+  const hay = ((item.domain || '') + ' ' + (item.stack || '') + ' ' + (item.listener || '')).toLowerCase();
+  return tokens.some((tok) => hay.includes(tok));
+}
+
+function refreshCount(targetId) {
+  const id = Number.isInteger(targetId) && targetId >= 0 ? targetId : selectedId;
+  if (!Number.isInteger(id) || id < 0) {
+    // Try to infer current active tab to avoid errors on -1
+    return runtime.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs && tabs[0]) {
+        selectedId = tabs[0].id;
+        refreshCount(selectedId);
+      }
+    });
+  }
+
+  runtime.storage.sync.get({ filter_extensions: true, exclude_sources: 'jquery, googletagmanager' }, (settings) => {
+    const listeners = tab_listeners[id] || [];
     const filtered = settings.filter_extensions
       ? listeners.filter((l) => !isFromExtension(l))
       : listeners;
 
-    const txt = filtered.length;
+    const tokens = parseExclusions(settings.exclude_sources || '');
+    const filtered2 = filtered.filter((l) => !excludedByTokens(l, tokens));
 
-    runtime.tabs.get(selectedId, () => {
+    const txt = filtered2.length;
+
+    runtime.tabs.get(id, () => {
       if (!runtime.runtime.lastError) {
         runtime.action.setBadgeText({
           text: txt > 0 ? txt.toString() : "",
-          tabId: selectedId,
+          tabId: id,
         });
         runtime.action.setBadgeBackgroundColor({
-          tabId: selectedId,
+          tabId: id,
           color: txt > 0 ? [255, 0, 0, 255] : [0, 0, 255, 0],
         });
       }
@@ -70,7 +97,10 @@ runtime.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.pushState) tab_push[tabId] = true;
   if (msg.changePage) delete tab_lasturl[tabId];
   if (msg.log) console.log(msg.log);
-  else refreshCount();
+  else {
+    if (selectedId < 0) selectedId = tabId; // initialize selection early
+    refreshCount(tabId);
+  }
 });
 
 runtime.tabs.onUpdated.addListener((tabId, changeInfo) => {
@@ -109,4 +139,3 @@ runtime.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     refreshCount();
   }
 });
-
