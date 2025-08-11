@@ -14,21 +14,8 @@ This extension is a refined and extended version of [postMessage-tracker](https:
 * Improved syntax highlighting
 * Better code formatting for easier reading
 * Filters postMessages from other extensions
-
-## 🛠️ NPM Development Workflow
-
-This repo now ships an npm-based layout to make development and packaging easier, without changing the core algorithm that finds postMessage listeners.
-
-- Install Node 18+.
-- Commands:
-  - `npm test` — runs Node tests for popup helpers.
-  - `npm run build` — writes packaged extension files to `dist/chrome` and `dist/firefox`.
-
-### Load Unpacked from dist
-
-After running `npm run build`:
-- Chrome: load `dist/chrome` as the unpacked extension.
-- Firefox: load `dist/firefox` (or zip it to an XPI) as the extension directory.
+* Exclude postMessages from chosen sources
+* Search between postMessages Listeners by code
 
 ## 📖 Usage 
 ### <img src="./readme-images/chrome.png" width="16" height="16" alt="Firefox Icon" /> Chrome
