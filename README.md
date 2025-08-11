@@ -36,8 +36,6 @@ Then you can simply load the extension by going through these steps:
 
 You can simply download the latest version of firefox addon from [Release Page](https://github.com/hamedsj/PitokPMTracker/releases) of the repository.
 
-You can also build locally: run `npm run build` and load the `dist/firefox` directory as a temporary extension. To package, zip `dist/firefox` into an `.xpi` and install it.
-
 ✅ Congratulations you successfully loaded the extension
 
 
