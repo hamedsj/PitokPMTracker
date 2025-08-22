@@ -32,7 +32,7 @@
     "open_in_tab": true
   },
 
-  "permissions": ["tabs", "storage"],
+  "permissions": ["tabs", "storage", "webNavigation"],
 
   "host_permissions": ["<all_urls>"],
 

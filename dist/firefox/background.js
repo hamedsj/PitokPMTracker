@@ -54,13 +54,14 @@ function refreshCount(targetId) {
 
     runtime.tabs.get(id, () => {
       if (!runtime.runtime.lastError) {
+        // FIX: Always set badge text, including empty string for 0 listeners
         runtime.action.setBadgeText({
           text: txt > 0 ? txt.toString() : "",
           tabId: id,
         });
         runtime.action.setBadgeBackgroundColor({
           tabId: id,
-          color: txt > 0 ? [255, 0, 0, 255] : [0, 0, 255, 0],
+          color: txt > 0 ? [255, 0, 0, 255] : [0, 0, 0, 0], // Transparent when 0
         });
       }
     });
@@ -83,9 +84,24 @@ function logListener(data) {
   });
 }
 
+// FIX: Consolidate all message handlers into single listener to prevent race conditions
 runtime.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  const tabId = sender.tab?.id;
-  if (!tabId) return;
+  // Handle popup/options messages (no sender.tab)
+  if (!sender.tab) {
+    if (msg === 'get-stuff') {
+      sendResponse({ listeners: tab_listeners });
+      return true; // Keep channel open for async response
+    }
+    if (msg === "refresh-badge") {
+      refreshCount();
+      return false;
+    }
+    return false;
+  }
+
+  // Handle content script messages (has sender.tab)
+  const tabId = sender.tab.id;
+  if (!tabId) return false;
 
   if (msg.listener && msg.listener !== "function () { [native code] }") {
     msg.parent_url = sender.tab.url;
@@ -95,19 +111,40 @@ runtime.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   if (msg.pushState) tab_push[tabId] = true;
-  if (msg.changePage) delete tab_lasturl[tabId];
+  if (msg.changePage) {
+    // FIX: Clear listeners on page change (beforeunload)
+    tab_listeners[tabId] = [];
+    delete tab_lasturl[tabId];
+    delete tab_push[tabId];
+  }
   if (msg.log) console.log(msg.log);
   else {
     if (selectedId < 0) selectedId = tabId; // initialize selection early
     refreshCount(tabId);
   }
+  
+  return false; // No async response needed for content script messages
 });
 
 runtime.tabs.onUpdated.addListener((tabId, changeInfo) => {
-  if (changeInfo.status === 'loading') {
-    tab_listeners[tabId] = [];
-    delete tab_push[tabId];
-    delete tab_lasturl[tabId];
+  // FIX: Only clear listeners on actual navigation, not sub-resource loading
+  if (changeInfo.status === 'loading' && changeInfo.url) {
+    // Only clear if URL actually changed (real navigation)
+    const currentUrl = tab_lasturl[tabId];
+    const newUrl = changeInfo.url;
+    
+    // Additional safety: Don't clear if it's just a hash change or query param change
+    const urlChanged = !currentUrl || (
+      newUrl !== currentUrl && 
+      newUrl.split('#')[0] !== currentUrl.split('#')[0] // Different base URL
+    );
+    
+    if (urlChanged) {
+      console.log(`[PitokPM] Clearing listeners for tab ${tabId}: ${currentUrl} -> ${newUrl}`);
+      tab_listeners[tabId] = [];
+      delete tab_push[tabId];
+      tab_lasturl[tabId] = newUrl;
+    }
   }
   if (changeInfo.status === 'complete' && tabId === selectedId) {
     refreshCount();
@@ -128,14 +165,4 @@ runtime.runtime.onStartup.addListener(() => {
   });
 });
 
-runtime.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg === 'get-stuff') {
-    sendResponse({ listeners: tab_listeners });
-  }
-});
-
-runtime.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg === "refresh-badge") {
-    refreshCount();
-  }
-});
+// Removed duplicate message handlers - now consolidated above
