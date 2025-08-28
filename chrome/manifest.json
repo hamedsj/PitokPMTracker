@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Pitok PM Tracker",
   "description": "Monitors and indicates postMessage listeners in the current window.",
-  "version": "2.0.0",
+  "version": "2.0.1",
 
   "background": {
     "service_worker": "background.js",
