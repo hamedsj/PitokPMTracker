@@ -1,6 +1,6 @@
 {
   "name": "pitok-pm-tracker",
-  "version": "0.1.0",
+  "version": "2.1.0",
   "private": true,
   "description": "Browser extension to track postMessage listeners (npm-based layout)",
   "license": "UNLICENSED",
